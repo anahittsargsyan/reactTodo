@@ -1,5 +1,4 @@
 import React, { ChangeEvent, useState } from "react";
-//import logo from './logo.svg';
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { AiOutlineArrowDown } from "react-icons/ai";
@@ -141,7 +140,9 @@ function App() {
             <div
               className="todo-container mt-1"
               key={index}
-              onKeyDown={(event) => event.key === "Enter" && editedNameTodo(todo)}
+              onKeyDown={(event) =>
+                event.key === "Enter" && editedNameTodo(todo)
+              }
             >
               <div
                 className="title-container d-flex "
