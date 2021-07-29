@@ -97,9 +97,8 @@ function App() {
     todo.editable = true;
     setTodos((state) => [...state]);
   }
-  function editNameTodo(todo: Todo) {
+  function editedNameTodo(todo: Todo) {
     todo.editable = false;
-
     setTodos((state) => [...state]);
   }
   function editName(event: ChangeEvent<HTMLInputElement>, todo: Todo) {
@@ -142,7 +141,7 @@ function App() {
             <div
               className="todo-container mt-1"
               key={index}
-              onKeyDown={(event) => event.key === "Enter" && editNameTodo(todo)}
+              onKeyDown={(event) => event.key === "Enter" && editedNameTodo(todo)}
             >
               <div
                 className="title-container d-flex "
