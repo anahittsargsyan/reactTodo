@@ -2,6 +2,17 @@ import React, { ChangeEvent, useState } from "react";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { AiOutlineArrowDown } from "react-icons/ai";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  addTodo,
+  deleteDone,
+  deleteTodo,
+  done,
+  editedNameTodo,
+  editName,
+  editTodo,
+  selectAll,
+} from "./features/counter/AddingTodosSlice";
 
 interface Todo {
   title: string;
@@ -11,123 +22,65 @@ interface Todo {
 }
 
 function App() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [activeTodos, setActiveTodos] = useState<Todo[]>([]);
-  const [completedTodos, setCompletedTodos] = useState<Todo[]>([]);
+  const dispatch = useDispatch();
+  let todoList = useSelector((state: any) => state.addingTodos.todos);
   const [inputValue, setInputValue] = useState<string>("");
   const [type, setType] = useState<string>("all");
-  const [selectAll, setSelectAll] = useState<boolean>(false);
 
   function getInputValue(event: ChangeEvent<HTMLInputElement>) {
     setInputValue(event.target.value);
   }
 
-  const countLength = todos.filter((todo) => !todo.done).length;
+  const countLength = todoList.filter((todo: Todo) => !todo.done).length;
 
   const initialState = {
-    todos: todos,
+    todos: todoList,
   };
   switch (type) {
     case "active":
-      initialState.todos = activeTodos;
+      initialState.todos = todoList.filter((e: Todo) => !e.done);
       break;
     case "completed":
-      initialState.todos = completedTodos;
-      break;
-    case "all":
-      initialState.todos = todos;
+      initialState.todos = todoList.filter((e: Todo) => e.done);
       break;
     default:
       break;
   }
 
-  function done(todo: Todo, e: any) {
-    let x = initialState.todos.filter((item) => {
-      if (item.id === todo.id) {
-        item.done = !item.done;
-        return item;
-      }
-      return item;
-    });
-    setTodos(() => x);
-  }
-
   function createTodo() {
-    if (!inputValue) {
-      return alert("Todo title is required");
-    }
-    setTodos((state) => [
-      ...state,
-
-      {
+    dispatch(
+      addTodo({
         title: inputValue,
         done: false,
         id: Math.random(),
         editable: false,
-      },
-    ]);
+      })
+    );
     setInputValue("");
   }
   function clickAll() {
     setType("all");
   }
 
-  function handleRemove(todo: any) {
-    const newArr: Todo[] = todos.filter((e) => e.id !== todo.id);
-    setTodos(() => newArr);
-  }
   function clickActive() {
-    const array: Todo[] = todos.filter((e) => !e.done);
     setType("active");
-    setActiveTodos(() => [...array]);
-  }
-  function deleteDone() {
-    const array: Todo[] = todos.filter((e) => !e.done);
-    setTodos(array);
-    const arr: Todo[] = completedTodos.filter((e) => !e.done);
-    setCompletedTodos(arr);
-  }
-  function clickCompleted() {
-    const array: Todo[] = todos.filter((e) => e.done);
-    setType("completed");
-    setCompletedTodos(() => [...array]);
-  }
-  function editTodo(todo: Todo) {
-    todo.editable = true;
-    setTodos((state) => [...state]);
-  }
-  function editedNameTodo(todo: Todo) {
-    todo.editable = false;
-    setTodos((state) => [...state]);
-  }
-  function editName(event: ChangeEvent<HTMLInputElement>, todo: Todo) {
-    todo.title = event.target.value;
-    setTodos((state) => [...state]);
   }
 
-  function selectAllFn() {
-    todos.forEach((todo) => {
-      todo.done = selectAll;
-    });
-    setTodos((state) => [...state]);
+  function clickCompleted() {
+    setType("completed");
   }
+
   return (
     <div className="App">
       <header className="App-header align-items-center d-flex">
         <h1>todos</h1>
         <div className="inputTodo">
-          <div
-            className="arrow"
-            onClick={() => {
-              setSelectAll(!selectAll);
-              selectAllFn();
-            }}
-          >
+          <div className="arrow" onClick={() => dispatch(selectAll())}>
             <AiOutlineArrowDown />
           </div>
 
           <input
-            className="ban"
+            className="inputSpace"
             placeholder="What needs to be done?"
             onChange={getInputValue}
             value={inputValue}
@@ -135,24 +88,24 @@ function App() {
           />
         </div>
 
-        {initialState.todos.map((todo, index) => {
+        {initialState.todos.map((todo: any, index: any) => {
           return (
             <div
               className="todo-container mt-1"
               key={index}
               onKeyDown={(event) =>
-                event.key === "Enter" && editedNameTodo(todo)
+                event.key === "Enter" && dispatch(editedNameTodo(todo))
               }
             >
               <div
                 className="title-container d-flex "
-                onDoubleClick={() => editTodo(todo)}
+                onDoubleClick={() => dispatch(editTodo(todo))}
               >
                 <div className="checkField">
                   <input
                     className="form-check-input"
                     type="checkbox"
-                    onChange={(e) => done(todo, e)}
+                    onChange={() => dispatch(done(todo))}
                     id="flexCheckDefault"
                     checked={todo.done}
                   />
@@ -166,7 +119,14 @@ function App() {
                     <input
                       type="editable"
                       className="editName"
-                      onChange={(event) => editName(event, todo)}
+                      onChange={(event) =>
+                        dispatch(
+                          editName({
+                            todo,
+                            inputValue: event.target.value,
+                          } as any)
+                        )
+                      }
                       value={todo.title}
                     />
                   </div>
@@ -174,7 +134,7 @@ function App() {
                 <button
                   type="button"
                   className="btn btn-light"
-                  onClick={() => handleRemove(todo)}
+                  onClick={() => dispatch(deleteTodo(todo))}
                 >
                   X
                 </button>
@@ -196,7 +156,7 @@ function App() {
               Completed
             </div>
           </div>
-          <div className="clear" onClick={deleteDone}>
+          <div className="clear" onClick={() => dispatch(deleteDone())}>
             <p> Clear Completed </p>
           </div>
         </div>
